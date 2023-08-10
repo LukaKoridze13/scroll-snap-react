@@ -1,2 +1,9 @@
 import React from "react";
-export default function SnapScroll(props: React.HTMLProps<HTMLDivElement>): React.JSX.Element;
+interface ScnapScrollProps extends React.HTMLProps<HTMLDivElement> {
+    cooldown?: number;
+    isSnapScrollEnabled?: boolean;
+    scrollPosition?: "nearest" | "center" | "start" | "end";
+    userCanScroll?: boolean;
+}
+export default function SnapScroll(props: ScnapScrollProps): React.JSX.Element;
+export {};

@@ -19,17 +19,33 @@ To install the package, simply run:
 npm install snap-scroll-react
 ```
 
-## Usage
+### Usage
 
 The snap-scroll-react package provides two main components: SnapScroll and SnapItem.
 
-# SnapScroll
+## SnapScroll
 Wrap your content with the SnapScroll component to enable snap scrolling
+
+# Props
+
+- `cooldown` (number): Specifies the cooldown between scrolls in milliseconds.
+
+- `isSnapScrollEnabled` (boolean): Determines if the scroll behavior is snap scrolling (true) or normal scrolling (false). Snap scrolling provides a smoother experience by snapping to sections.
+
+- `scrollPosition` (string): Defines where the section should be placed after scrolling. Options include:
+
+  - `"nearest"`: The section is snapped to the nearest edge of the viewport (default).
+  - `"center"`: The section is centered within the viewport.
+  - `"start"`: The section starts at the top of the viewport.
+  - `"end"`: The section ends at the bottom of the viewport.
+
+- `userCanScroll` (boolean): Specifies whether the user can scroll the website. This applies to both snap scrolling and normal scrolling.
+
 
 # SnapItem
 Use SnapItem components to define individual sections within the SnapScroll container. If you use an HTML DOM element as a child of SnapItem, it will automatically receive the class snap-item-active when it's currently scrolled. If the child is a React component, it will receive the prop isActive, and you can access props.isActive within the element. Additionally, the prop props.className will be set to snap-item-active.
 
-## TypeScript
+## Code examples
 
 ```bash
 import React from "react";
@@ -44,25 +60,6 @@ function App() {
     </SnapScroll>
   );
 }
-```
-
-## Javascript
-
-```bash
-// Import your package (Make sure to adjust the path)
-const ScrollSnapReact = require("snap-scroll-react");
-
-// Create an instance of SnapScroll
-const snapScroll = ScrollSnapReact.SnapScroll.create({
-  content: [
-    ScrollSnapReact.SnapItem.create({ id: "section1", children: "Section 1" }),
-    ScrollSnapReact.SnapItem.create({ id: "section2", children: "Section 2" }),
-    // Add more SnapItems as needed
-  ]
-});
-
-// Append the snapScroll container to the DOM
-document.body.appendChild(snapScroll.container);
 ```
 
 ## SnapItem

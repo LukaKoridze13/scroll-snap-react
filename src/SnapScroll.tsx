@@ -1,25 +1,44 @@
 import React, { useRef, useEffect, useState } from "react";
 import Wrapper from "./Wrapper";
-export default function SnapScroll(props: React.HTMLProps<HTMLDivElement>) {
-  const { className = "", ...restProps } = props;
+
+interface ScnapScrollProps extends React.HTMLProps<HTMLDivElement> {
+  cooldown?: number;
+  isSnapScrollEnabled?: boolean;
+  scrollPosition?: "nearest" | "center" | "start" | "end";
+  userCanScroll?: boolean;
+}
+
+export default function SnapScroll(props: ScnapScrollProps) {
+  const {
+    className = "",
+    cooldown,
+    isSnapScrollEnabled,
+    scrollPosition,
+    userCanScroll,
+    ...restProps
+  } = props;
   const combinedClassName = `snap-container ${className}`;
 
   const wrapperRef = useRef<HTMLDivElement | null>(null);
-  const COOLDOWN: number = 500;
-
+  const COOLDOWN: number = cooldown || 500;
+  const scrollEnabled: boolean = setDefault(isSnapScrollEnabled);
+  const canScroll: boolean = setDefault(userCanScroll);
   const [snapItems, setSnapItems] = useState<Element[] | null>(null);
   const [lastScrollTime, setLastScrollTime] = useState<number>(Date.now());
   const [xDown, setXDown] = useState<number | null>(null);
   const [yDown, setYDown] = useState<number | null>(null);
+  const [swipeDirection, setSwipeDirection] = useState<"down" | "up" | null>(
+    null
+  );
 
   const scrollToElement = (element: Element) => {
-    element.scrollIntoView();
+    element.scrollIntoView({ block: scrollPosition || "start" });
   };
 
   const emitGoEvent = (direction: "up" | "down") => {
-    if (snapItems) {
+    if (snapItems && canScroll) {
       // prettier-ignore
-      const currentItem = snapItems.find((item) => item.id === window.location.hash.replace('#', ''));
+      const currentItem = snapItems.find((item:Element) => item.id === window.location.hash.replace('#', ''));
       if (currentItem) {
         const currentIndex = snapItems.indexOf(currentItem);
         if (direction === "up") {
@@ -57,6 +76,7 @@ export default function SnapScroll(props: React.HTMLProps<HTMLDivElement>) {
 
   const handleTouchMove = (event: TouchEvent) => {
     event.preventDefault();
+
     if (!xDown || !yDown) {
       return;
     }
@@ -66,18 +86,37 @@ export default function SnapScroll(props: React.HTMLProps<HTMLDivElement>) {
     var yDiff = yDown - yUp;
     if (Math.abs(xDiff) <= Math.abs(yDiff)) {
       if (yDiff > 0) {
-        emitGoEvent("down");
+        setSwipeDirection("down");
       } else {
-        emitGoEvent("up");
+        setSwipeDirection("up");
       }
     }
     setXDown(null);
     setYDown(null);
   };
 
+  const handleTouchEnd = () => {
+    const currentTime: number = Date.now();
+    if (currentTime - lastScrollTime > COOLDOWN) {
+      swipeDirection && emitGoEvent(swipeDirection);
+      setLastScrollTime(currentTime);
+    }
+  };
+
   const getTouches = (event: TouchEvent) => {
     return event.touches;
   };
+
+  function setDefault(prop: boolean | undefined) {
+    let value: boolean;
+    if (prop === undefined) {
+      value = true;
+    } else {
+      value = prop;
+    }
+    return value;
+  }
+
   useEffect(() => {
     if (wrapperRef.current) {
       const children = [...wrapperRef.current.children];
@@ -95,33 +134,64 @@ export default function SnapScroll(props: React.HTMLProps<HTMLDivElement>) {
       foundItem && scrollToElement(foundItem);
     }
   }, [window.location.hash]);
+
   // change hash while swipe
   useEffect(() => {
-    document.addEventListener("touchstart", handleTouchStart, {
-      passive: false,
-    });
-    document.addEventListener("touchmove", handleTouchMove, {
-      passive: false,
-    });
+    scrollEnabled &&
+      document.addEventListener("touchmove", handleTouchMove, {
+        passive: false,
+      });
     return () => {
-      document.removeEventListener("touchstart", handleTouchStart);
       document.removeEventListener("touchmove", handleTouchMove);
     };
-  }, [lastScrollTime, xDown, yDown]);
+  }, [lastScrollTime, xDown, yDown, scrollEnabled, canScroll]);
+
+  useEffect(() => {
+    scrollEnabled && document.addEventListener("touchstart", handleTouchStart);
+    return () => {
+      document.removeEventListener("touchstart", handleTouchStart);
+    };
+  }, [scrollEnabled]);
+
+  useEffect(() => {
+    scrollEnabled && document.addEventListener("touchend", handleTouchEnd);
+    return () => {
+      document.removeEventListener("touchend", handleTouchEnd);
+    };
+  }, [lastScrollTime, swipeDirection, scrollEnabled]);
+
   // change hash while wheel is scrolling
   useEffect(() => {
-    document.addEventListener("wheel", handleWheelEvent, { passive: false });
+    scrollEnabled &&
+      document.addEventListener("wheel", handleWheelEvent, { passive: false });
     return () => {
       document.removeEventListener("wheel", handleWheelEvent);
     };
-  }, [lastScrollTime]);
+  }, [lastScrollTime, scrollEnabled, canScroll]);
 
   // Starting hash giver
   useEffect(() => {
-    if (!window.localStorage.hash && snapItems) {
+    if (!window.location.hash && snapItems) {
       window.location.hash = snapItems[0].id;
     }
   }, [snapItems]);
+
+  function stopScroll(event: Event) {
+    event.preventDefault();
+  }
+
+  useEffect(() => {
+    if (!canScroll) {
+      document.addEventListener("wheel", stopScroll, { passive: false });
+      document.addEventListener("scroll", stopScroll, { passive: false });
+      document.addEventListener("touchmove", stopScroll, { passive: false });
+    }
+    return () => {
+      document.removeEventListener("wheel", stopScroll);
+      document.removeEventListener("scroll", stopScroll);
+      document.removeEventListener("touchmove", stopScroll);
+    };
+  }, [canScroll]);
 
   return (
     <Wrapper

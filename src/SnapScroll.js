@@ -40,19 +40,22 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const react_1 = __importStar(require("react"));
 const Wrapper_1 = __importDefault(require("./Wrapper"));
 function SnapScroll(props) {
-    const { className = "" } = props, restProps = __rest(props, ["className"]);
+    const { className = "", cooldown, isSnapScrollEnabled, scrollPosition, userCanScroll } = props, restProps = __rest(props, ["className", "cooldown", "isSnapScrollEnabled", "scrollPosition", "userCanScroll"]);
     const combinedClassName = `snap-container ${className}`;
     const wrapperRef = (0, react_1.useRef)(null);
-    const COOLDOWN = 500;
+    const COOLDOWN = cooldown || 500;
+    const scrollEnabled = setDefault(isSnapScrollEnabled);
+    const canScroll = setDefault(userCanScroll);
     const [snapItems, setSnapItems] = (0, react_1.useState)(null);
     const [lastScrollTime, setLastScrollTime] = (0, react_1.useState)(Date.now());
     const [xDown, setXDown] = (0, react_1.useState)(null);
     const [yDown, setYDown] = (0, react_1.useState)(null);
+    const [swipeDirection, setSwipeDirection] = (0, react_1.useState)(null);
     const scrollToElement = (element) => {
-        element.scrollIntoView();
+        element.scrollIntoView({ block: scrollPosition || "start" });
     };
     const emitGoEvent = (direction) => {
-        if (snapItems) {
+        if (snapItems && canScroll) {
             // prettier-ignore
             const currentItem = snapItems.find((item) => item.id === window.location.hash.replace('#', ''));
             if (currentItem) {
@@ -100,18 +103,35 @@ function SnapScroll(props) {
         var yDiff = yDown - yUp;
         if (Math.abs(xDiff) <= Math.abs(yDiff)) {
             if (yDiff > 0) {
-                emitGoEvent("down");
+                setSwipeDirection("down");
             }
             else {
-                emitGoEvent("up");
+                setSwipeDirection("up");
             }
         }
         setXDown(null);
         setYDown(null);
     };
+    const handleTouchEnd = () => {
+        const currentTime = Date.now();
+        if (currentTime - lastScrollTime > COOLDOWN) {
+            swipeDirection && emitGoEvent(swipeDirection);
+            setLastScrollTime(currentTime);
+        }
+    };
     const getTouches = (event) => {
         return event.touches;
     };
+    function setDefault(prop) {
+        let value;
+        if (prop === undefined) {
+            value = true;
+        }
+        else {
+            value = prop;
+        }
+        return value;
+    }
     (0, react_1.useEffect)(() => {
         if (wrapperRef.current) {
             const children = [...wrapperRef.current.children];
@@ -129,30 +149,55 @@ function SnapScroll(props) {
     }, [window.location.hash]);
     // change hash while swipe
     (0, react_1.useEffect)(() => {
-        document.addEventListener("touchstart", handleTouchStart, {
-            passive: false,
-        });
-        document.addEventListener("touchmove", handleTouchMove, {
-            passive: false,
-        });
+        scrollEnabled &&
+            document.addEventListener("touchmove", handleTouchMove, {
+                passive: false,
+            });
         return () => {
-            document.removeEventListener("touchstart", handleTouchStart);
             document.removeEventListener("touchmove", handleTouchMove);
         };
-    }, [lastScrollTime, xDown, yDown]);
+    }, [lastScrollTime, xDown, yDown, scrollEnabled, canScroll]);
+    (0, react_1.useEffect)(() => {
+        scrollEnabled && document.addEventListener("touchstart", handleTouchStart);
+        return () => {
+            document.removeEventListener("touchstart", handleTouchStart);
+        };
+    }, [scrollEnabled]);
+    (0, react_1.useEffect)(() => {
+        scrollEnabled && document.addEventListener("touchend", handleTouchEnd);
+        return () => {
+            document.removeEventListener("touchend", handleTouchEnd);
+        };
+    }, [lastScrollTime, swipeDirection, scrollEnabled]);
     // change hash while wheel is scrolling
     (0, react_1.useEffect)(() => {
-        document.addEventListener("wheel", handleWheelEvent, { passive: false });
+        scrollEnabled &&
+            document.addEventListener("wheel", handleWheelEvent, { passive: false });
         return () => {
             document.removeEventListener("wheel", handleWheelEvent);
         };
-    }, [lastScrollTime]);
+    }, [lastScrollTime, scrollEnabled, canScroll]);
     // Starting hash giver
     (0, react_1.useEffect)(() => {
-        if (!window.localStorage.hash && snapItems) {
+        if (!window.location.hash && snapItems) {
             window.location.hash = snapItems[0].id;
         }
     }, [snapItems]);
+    function stopScroll(event) {
+        event.preventDefault();
+    }
+    (0, react_1.useEffect)(() => {
+        if (!canScroll) {
+            document.addEventListener("wheel", stopScroll, { passive: false });
+            document.addEventListener("scroll", stopScroll, { passive: false });
+            document.addEventListener("touchmove", stopScroll, { passive: false });
+        }
+        return () => {
+            document.removeEventListener("wheel", stopScroll);
+            document.removeEventListener("scroll", stopScroll);
+            document.removeEventListener("touchmove", stopScroll);
+        };
+    }, [canScroll]);
     return (react_1.default.createElement(Wrapper_1.default, Object.assign({ forwardedRef: wrapperRef, className: combinedClassName }, restProps), props.children));
 }
 exports.default = SnapScroll;
