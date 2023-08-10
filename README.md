@@ -1,6 +1,6 @@
-# scroll-snap-react
+# snap-scroll-react
 
-scroll-snap-react is a versatile React package that enables smooth snap scrolling behavior within your web applications. With this package, you can create scrollable sections that snap into place, enhancing the user experience and allowing users to navigate through your content effortlessly.
+snap-scroll-react is a versatile React package that enables smooth snap scrolling behavior within your web applications. With this package, you can create scrollable sections that snap into place, enhancing the user experience and allowing users to navigate through your content effortlessly.
 
 ## Features
 
@@ -16,21 +16,24 @@ scroll-snap-react is a versatile React package that enables smooth snap scrollin
 To install the package, simply run:
 
 ```bash
-npm install scroll-snap-react
+npm install snap-scroll-react
 ```
 
 ## Usage
 
-The scroll-snap-react package provides two main components: SnapScroll and SnapItem.
+The snap-scroll-react package provides two main components: SnapScroll and SnapItem.
 
-SnapScroll
-Wrap your content with the SnapScroll component to enable snap scrolling:
+# SnapScroll
+Wrap your content with the SnapScroll component to enable snap scrolling
+
+# SnapItem
+Use SnapItem components to define individual sections within the SnapScroll container. If you use an HTML DOM element as a child of SnapItem, it will automatically receive the class snap-item-active when it's currently scrolled. If the child is a React component, it will receive the prop isActive, and you can access props.isActive within the element. Additionally, the prop props.className will be set to snap-item-active.
 
 ## TypeScript
 
 ```bash
 import React from "react";
-import { SnapScroll, SnapItem } from "scroll-snap-react";
+import { SnapScroll, SnapItem } from "snap-scroll-react";
 
 function App() {
   return (
@@ -47,7 +50,7 @@ function App() {
 
 ```bash
 // Import your package (Make sure to adjust the path)
-const ScrollSnapReact = require("scroll-snap-react");
+const ScrollSnapReact = require("snap-scroll-react");
 
 // Create an instance of SnapScroll
 const snapScroll = ScrollSnapReact.SnapScroll.create({
