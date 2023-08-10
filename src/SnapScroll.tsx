@@ -50,7 +50,6 @@ export default function SnapScroll(props: React.HTMLProps<HTMLDivElement>) {
   };
 
   const handleTouchStart = (event: TouchEvent) => {
-    event.preventDefault();
     var firstTouch = getTouches(event)[0];
     setXDown(firstTouch.clientX);
     setYDown(firstTouch.clientY);
@@ -81,8 +80,8 @@ export default function SnapScroll(props: React.HTMLProps<HTMLDivElement>) {
   };
   useEffect(() => {
     if (wrapperRef.current) {
-      const children = Array.from(wrapperRef.current.children);
-      const snapItems = children.filter((child) =>
+      const children = [...wrapperRef.current.children];
+      const snapItems = children.filter((child: Element) =>
         child.classList.contains("snap-item")
       );
       setSnapItems(snapItems);

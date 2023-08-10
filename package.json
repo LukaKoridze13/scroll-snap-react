@@ -1,13 +1,18 @@
 {
   "name": "snap-scroll-react",
-  "version": "2.1.0",
+  "version": "4.0.0",
   "description": "A React package for implementing scroll snap behavior.",
   "main": "index.js",
   "types": "index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc"
   },
-  "keywords": ["react", "scroll", "scroll-snap"],
+
+  "keywords": [
+    "react",
+    "scroll",
+    "scroll-snap"
+  ],
   "author": "Luka Koridze",
   "license": "MIT",
   "peerDependencies": {
@@ -17,5 +22,11 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/LukaKoridze13/snap-scroll-react.git"
+  },
+  "dependencies": {
+    "typescript": "^5.1.6"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.20"
   }
 }
