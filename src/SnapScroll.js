@@ -55,19 +55,31 @@ function SnapScroll(props) {
         element.scrollIntoView({ block: scrollPosition || "start" });
     };
     const emitGoEvent = (direction) => {
-        if (snapItems && canScroll) {
-            // prettier-ignore
-            const currentItem = snapItems.find((item) => item.id === window.location.hash.replace('#', ''));
-            if (currentItem) {
-                const currentIndex = snapItems.indexOf(currentItem);
-                if (direction === "up") {
-                    if (currentIndex !== 0) {
-                        window.location.hash = snapItems[currentIndex - 1].id;
-                    }
+        if (direction === "hash") {
+            if (snapItems) {
+                const currentItem = snapItems.find((item) => item.id === window.location.hash.replace("#", ""));
+                if (currentItem) {
+                    setTimeout(() => {
+                        scrollToElement(currentItem);
+                    }, 100);
                 }
-                else {
-                    if (currentIndex !== snapItems.length - 1) {
-                        window.location.hash = snapItems[currentIndex + 1].id;
+            }
+        }
+        else {
+            if (snapItems && canScroll) {
+                // prettier-ignore
+                const currentItem = snapItems.find((item) => item.id === window.location.hash.replace('#', ''));
+                if (currentItem) {
+                    const currentIndex = snapItems.indexOf(currentItem);
+                    if (direction === "up") {
+                        if (currentIndex !== 0) {
+                            window.location.hash = snapItems[currentIndex - 1].id;
+                        }
+                    }
+                    else {
+                        if (currentIndex !== snapItems.length - 1) {
+                            window.location.hash = snapItems[currentIndex + 1].id;
+                        }
                     }
                 }
             }
@@ -132,6 +144,9 @@ function SnapScroll(props) {
         }
         return value;
     }
+    (0, react_1.useEffect)(() => {
+        emitGoEvent("hash");
+    }, [snapItems]);
     (0, react_1.useEffect)(() => {
         if (wrapperRef.current) {
             const children = [...wrapperRef.current.children];
