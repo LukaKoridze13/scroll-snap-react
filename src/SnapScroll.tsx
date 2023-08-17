@@ -35,19 +35,32 @@ export default function SnapScroll(props: ScnapScrollProps) {
     element.scrollIntoView({ block: scrollPosition || "start" });
   };
 
-  const emitGoEvent = (direction: "up" | "down") => {
-    if (snapItems && canScroll) {
-      // prettier-ignore
-      const currentItem = snapItems.find((item:Element) => item.id === window.location.hash.replace('#', ''));
-      if (currentItem) {
-        const currentIndex = snapItems.indexOf(currentItem);
-        if (direction === "up") {
-          if (currentIndex !== 0) {
-            window.location.hash = snapItems[currentIndex - 1].id;
-          }
-        } else {
-          if (currentIndex !== snapItems.length - 1) {
-            window.location.hash = snapItems[currentIndex + 1].id;
+  const emitGoEvent = (direction: "up" | "down" | "hash") => {
+    if (direction === "hash") {
+      if (snapItems) {
+        const currentItem = snapItems.find(
+          (item: Element) => item.id === window.location.hash.replace("#", "")
+        );
+        if (currentItem) {
+          setTimeout(() => {
+            scrollToElement(currentItem);
+          }, 100);
+        }
+      }
+    } else {
+      if (snapItems && canScroll) {
+        // prettier-ignore
+        const currentItem = snapItems.find((item:Element) => item.id === window.location.hash.replace('#', ''));
+        if (currentItem) {
+          const currentIndex = snapItems.indexOf(currentItem);
+          if (direction === "up") {
+            if (currentIndex !== 0) {
+              window.location.hash = snapItems[currentIndex - 1].id;
+            }
+          } else {
+            if (currentIndex !== snapItems.length - 1) {
+              window.location.hash = snapItems[currentIndex + 1].id;
+            }
           }
         }
       }
@@ -116,6 +129,10 @@ export default function SnapScroll(props: ScnapScrollProps) {
     }
     return value;
   }
+
+  useEffect(() => {
+    emitGoEvent("hash");
+  }, [snapItems]);
 
   useEffect(() => {
     if (wrapperRef.current) {
@@ -197,8 +214,7 @@ export default function SnapScroll(props: ScnapScrollProps) {
     <Wrapper
       forwardedRef={wrapperRef}
       className={combinedClassName}
-      {...restProps}
-    >
+      {...restProps}>
       {props.children}
     </Wrapper>
   );
