@@ -36,6 +36,7 @@ export default function SnapScroll(props: ScnapScrollProps) {
   };
 
   const emitGoEvent = (direction: "up" | "down" | "hash") => {
+
     if (direction === "hash") {
       if (snapItems) {
         const currentItem = snapItems.find(
@@ -88,6 +89,7 @@ export default function SnapScroll(props: ScnapScrollProps) {
   };
 
   const handleTouchMove = (event: TouchEvent) => {
+    
     event.preventDefault();
 
     if (!xDown || !yDown) {
@@ -97,6 +99,7 @@ export default function SnapScroll(props: ScnapScrollProps) {
     var yUp = event.touches[0].clientY;
     var xDiff = xDown - xUp;
     var yDiff = yDown - yUp;
+    
     if (Math.abs(xDiff) <= Math.abs(yDiff)) {
       if (yDiff > 0) {
         setSwipeDirection("down");
@@ -113,6 +116,7 @@ export default function SnapScroll(props: ScnapScrollProps) {
     if (currentTime - lastScrollTime > COOLDOWN) {
       swipeDirection && emitGoEvent(swipeDirection);
       setLastScrollTime(currentTime);
+      setSwipeDirection(null)
     }
   };
 

@@ -129,6 +129,7 @@ function SnapScroll(props) {
         if (currentTime - lastScrollTime > COOLDOWN) {
             swipeDirection && emitGoEvent(swipeDirection);
             setLastScrollTime(currentTime);
+            setSwipeDirection(null);
         }
     };
     const getTouches = (event) => {
